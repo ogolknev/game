@@ -66,9 +66,11 @@ class Creature(Entity):
     
     def update(self, viewer, tangiables = None, *args, **kwargs):
 
-
+        # Сохранение текущих заблокированных направления и скорости перед сбросом
         self_move_block = self.move_block
         self_speedx, self_speedy = self.speedx, self.speedy
+
+        # Сброс текущих заблокированных направления и скорости
         self.move_block = set()
         self.speedx, self.speedy = 0, 0
 
@@ -76,12 +78,12 @@ class Creature(Entity):
 
             '''
             Функция реализующая свойство осязаемости для двигающихся сущностей. \n
-            Возвращает множество заблокированных направлений {'r', 'l', 't', 'b'} и \n
+            Определяет множество заблокированных направлений {'r', 'l', 't', 'b'} и \n
             коректируюущие вертикальную и горизонтальную скорости.
             '''
             
 
-            # Проверка есть ли в списке осязаемых предметов
+            # Проверка есть ли в списке осязаемые сущности
             if tangiables:
 
                 # Перебор всех осязаемых сущностей для проверки столкновения или пересечения
@@ -89,8 +91,10 @@ class Creature(Entity):
 
                     tangiable = tangiables[i]
 
+                    # Проверка на 'столкновение' с собой
                     if self != tangiable:
 
+                        # Определение толкающая (и)или толкаемая ли сущность
                         if self.max_speed and self.directions and tangiable.max_speed:
                             self.push = True
                             self.pushed = False
@@ -102,9 +106,10 @@ class Creature(Entity):
                             self.pushed = False
                         
 
-                        # Вычисления расстояния между центрами обозреваемой и проверяемой сущностями
+                        # Вычисления расстояния между центрами проверяемыми сущностями
                         delta_x = self.rect.centerx - tangiable.rect.centerx
                         delta_y = self.rect.centery - tangiable.rect.centery
+
 
                         # Значение амортизации для невыхода из блокировки после корректировки положения
                         amortization = -tangiable.max_speed + 1 if self.pushed and (self_speedx or self_speedy) else 1
@@ -124,11 +129,13 @@ class Creature(Entity):
 
                             # Определение направления столкновения по горизонтали справа и слева
                             if delta_x > 0:
-                                print(f'td: {tangiable.directions}')
+
+                                # Коррекция применима только для не толкающей или толкаемой, или толкаемой в данном направлении сущности
                                 if not (self.push or self.pushed) or self.pushed and Directions.RIGHT in tangiable.directions:
                                     self.speedx = right - amortization
+                                # Блок применим только для не толкающей или толкаюещей пересекающейся с толкаемой сущностью
+                                # на 2 амортизации в данном направлении
                                 if not self.push or right > 2 * amortization: self.move_block.add('r')
-                                # print(f'right: {self.speedx}')
                             
                             if delta_x < 0:
                                 if not (self.push or self.pushed) or self.pushed and Directions.LEFT in tangiable.directions:
@@ -154,29 +161,26 @@ class Creature(Entity):
                                 print(f'top: {self.speedy}')
                                 # print(f'dx: {delta_x}')
                                 # print(f'dy: {delta_y}')
-                
-                        if self.push: print(f'{self} push\na: {amortization}\nb:{self.move_block}')
-                        if self.pushed: print(f'{self} pushed\na: {amortization}\nb:{self.move_block}')
 
         tangibility(self, tangiables)
 
         # Движение существа
-            
-        if Directions.UP in self.directions and 'b' not in self.move_block:
+        if Directions.UP in self.directions:
             self.speedy -= self.max_speed
-        if Directions.DOWN in self.directions and 't' not in self.move_block:
+        if Directions.DOWN in self.directions:
             self.speedy += self.max_speed
-        if Directions.LEFT in self.directions and 'r' not in self.move_block:
+        if Directions.LEFT in self.directions:
             self.speedx -= self.max_speed
-        if Directions.RIGHT in self.directions and 'l' not in self.move_block:
+        if Directions.RIGHT in self.directions:
             self.speedx += self.max_speed
 
-
+        # Применение блокировки движения
         if self.speedy < 0 and 'b' in self.move_block or self.speedy > 0 and 't' in self.move_block:
             self.speedy = 0
         if self.speedx < 0 and 'r' in self.move_block or self.speedx > 0 and 'l' in self.move_block:
             self.speedx = 0
 
+        # Изменение положения сущности 
         self.posx += self.speedx
         self.posy += self.speedy
 

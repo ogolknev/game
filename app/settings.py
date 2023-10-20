@@ -26,12 +26,16 @@ class Settings():
         self.clock = pygame.time.Clock()
 
 
+        # Задание клавишного контроллера
         self.k_control = KeyControl(self, controls)
 
 
+        # Задание группы для текущего обзорщика
         self.viewer_group = pygame.sprite.Group()
+        # Определение тукущего обзорщика и его групп
         self.c_viewer, self.c_viewer_groups = None, None
 
+        # Доступные обзорщики (тест)
         self.available_viewers = None
 
 
