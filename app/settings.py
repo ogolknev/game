@@ -17,7 +17,7 @@ class Settings():
     def __init__(self, controls: dict = None):
 
 
-        self.resolution = pygame.display.list_modes()[-1]
+        self.resolution = pygame.display.list_modes()[-3]
         self.screen = pygame.display.set_mode(self.resolution)
 
         self.running = True

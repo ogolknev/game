@@ -26,13 +26,13 @@ class Entity(pygame.sprite.Sprite):
         self.viewer = Viewer(self, settings_.resolution)
 
 
-        self.max_speed = None
-        self.speedx = None
-        self.speedy = None
-        self.directions = None
-        self.move_block = None
-        self.pushed = None
-        self.push = None
+        self.max_speed = 0
+        self.speedx = 0
+        self.speedy = 0
+        self.directions = set()
+        self.move_block = set()
+        self.pushed = False
+        self.push = False
 
 
     def view_update(self, viewer):
@@ -59,12 +59,16 @@ class Creature(Entity):
         
         super().__init__(texture, posx, posy)
 
+        self.move_block = set()
         self.max_speed = max_speed
         self.directions = set()
 
     
     def update(self, viewer, tangiables = None, *args, **kwargs):
 
+
+        self_move_block = self.move_block
+        self_speedx, self_speedy = self.speedx, self.speedy
         self.move_block = set()
         self.speedx, self.speedy = 0, 0
 
@@ -87,15 +91,25 @@ class Creature(Entity):
 
                     if self != tangiable:
 
-                        self.pushed = True if self.max_speed and tangiable.max_speed and tangiable.directions else False
-                        self.push = True if self.max_speed and self.directions and tangiable.max_speed else False
+                        if self.max_speed and self.directions and tangiable.max_speed:
+                            self.push = True
+                            self.pushed = False
+                        elif self.max_speed and tangiable.max_speed and tangiable.directions:
+                            self.pushed = True
+                            self.push = False
+                        else:
+                            self.push = False
+                            self.pushed = False
+                        
 
                         # Вычисления расстояния между центрами обозреваемой и проверяемой сущностями
                         delta_x = self.rect.centerx - tangiable.rect.centerx
                         delta_y = self.rect.centery - tangiable.rect.centery
 
                         # Значение амортизации для невыхода из блокировки после корректировки положения
-                        amortization = 1 if not self.push else 0
+                        amortization = -tangiable.max_speed + 1 if self.pushed and (self_speedx or self_speedy) else 1
+                        if self.push and tangiable.push: amortization = 0
+
 
                         # Определение расстояния от граней обозреваемой и проверяемой сущностями
                         right = tangiable.rect.right - self.rect.left
@@ -110,35 +124,41 @@ class Creature(Entity):
 
                             # Определение направления столкновения по горизонтали справа и слева
                             if delta_x > 0:
-                                if not self.push: self.speedx = right - amortization
-                                if not self.push: self.move_block.add('r')
+                                print(f'td: {tangiable.directions}')
+                                if not (self.push or self.pushed) or self.pushed and Directions.RIGHT in tangiable.directions:
+                                    self.speedx = right - amortization
+                                if not self.push or right > 2 * amortization: self.move_block.add('r')
                                 # print(f'right: {self.speedx}')
                             
                             if delta_x < 0:
-                                if not self.push: self.speedx = left + amortization
-                                if not self.push: self.move_block.add('l')
+                                if not (self.push or self.pushed) or self.pushed and Directions.LEFT in tangiable.directions:
+                                    self.speedx = left + amortization
+                                if not self.push or left < 2 * -amortization: self.move_block.add('l')
                                 # print(f'left: {self.speedx}')
 
                         elif abs(delta_x) <= abs(delta_y) and right > amortization and left < -amortization:
 
                             # Определение направления столкновения по вертикали снизу и сверху
                             if delta_y > 0:
-                                if not self.push: self.speedy = bottom - amortization
-                                if not self.push: self.move_block.add('b')
+                                if not (self.push or self.pushed) or self.pushed and Directions.DOWN in tangiable.directions:
+                                    self.speedy = bottom - amortization
+                                if not self.push or bottom > 2 * amortization: self.move_block.add('b')
                                 print(f'bottom: {self.speedy}')
                                 # print(f'dx: {delta_x}')
                                 # print(f'dy: {delta_y}')
 
                             if delta_y < 0:
-                                if not self.push: self.speedy = top + amortization
-                                if not self.push: self.move_block.add('t')
+                                if not (self.push or self.pushed) or self.pushed and Directions.UP in tangiable.directions:
+                                    self.speedy = top + amortization
+                                if not self.push or top < 2 * -amortization: self.move_block.add('t')
                                 print(f'top: {self.speedy}')
                                 # print(f'dx: {delta_x}')
                                 # print(f'dy: {delta_y}')
-                                
-                return self.move_block, self.speedx, self.speedy
+                
+                        if self.push: print(f'{self} push\na: {amortization}\nb:{self.move_block}')
+                        if self.pushed: print(f'{self} pushed\na: {amortization}\nb:{self.move_block}')
 
-        self.move_block, self.speedx, self.speedy = tangibility(self, tangiables)
+        tangibility(self, tangiables)
 
         # Движение существа
             
