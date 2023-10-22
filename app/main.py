@@ -29,10 +29,7 @@ while settings_.running:
     # Обновления спрайтов
     tangiables_sprites = tangiables.sprites()
 
-    
-    settings_.viewer_group.update(viewer=settings_.c_viewer, tangiables=tangiables_sprites)
-
-    players.update(viewer=settings_.c_viewer, tangiables=tangiables_sprites + settings_.viewer_group.sprites())
+    players.update(viewer=settings_.c_viewer, tangiables=tangiables_sprites)
     bariers.update(viewer=settings_.c_viewer)
 
 
@@ -47,7 +44,6 @@ while settings_.running:
 
     # Слой существ
     players.draw(settings_.screen)
-    settings_.viewer_group.draw(settings_.screen)
 
 
     # Вывод отрисованного кадра

@@ -49,7 +49,7 @@ barier_valya.add(players, tangiables)
 
 
 # Задание текущего обзорщика
-settings_.c_viewer, settings_.c_viewer_groups = set_viewer(player.viewer, settings_.viewer_group)
+settings_.c_viewer = player.viewer
 settings_.available_viewers = (barier_valya.viewer, player.viewer)
 
 k_controls = {

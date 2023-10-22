@@ -3,7 +3,6 @@
 '''
 
 import pygame
-from viewer import Viewer, set_viewer
 from enum import Enum
 
 
@@ -33,7 +32,7 @@ class Settings():
         # Задание группы для текущего обзорщика
         self.viewer_group = pygame.sprite.Group()
         # Определение тукущего обзорщика и его групп
-        self.c_viewer, self.c_viewer_groups = None, None
+        self.c_viewer = None
 
         # Доступные обзорщики (тест)
         self.available_viewers = None
@@ -99,19 +98,13 @@ class KeyControl():
 
                     self.settings.c_viewer.target.directions = set()
                     
-                    self.settings.c_viewer, self.settings.c_viewer_groups = set_viewer(self.settings.available_viewers[1],
-                                                                                       self.settings.viewer_group,
-                                                                                       self.settings.c_viewer,
-                                                                                       self.settings.c_viewer_groups)
+                    self.settings.c_viewer = self.settings.available_viewers[1]
                     
                 else:
 
                     self.settings.c_viewer.target.directions = set()
 
-                    self.settings.c_viewer, self.settings.c_viewer_groups = set_viewer(self.settings.available_viewers[0],
-                                                                                       self.settings.viewer_group,
-                                                                                       self.settings.c_viewer,
-                                                                                       self.settings.c_viewer_groups)
+                    self.settings.c_viewer = self.settings.available_viewers[0]
 
         # Отслеживание продолжительного нажатия
         pass
