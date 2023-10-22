@@ -3,7 +3,7 @@
 '''
 
 import pygame
-from settings import Directions
+from settings import Directions, Settings
 from viewer import Viewer
 
 
@@ -12,7 +12,9 @@ class Entity(pygame.sprite.Sprite):
     '''
     Родительский класс всех сущностей
     '''
-    def __init__(self, texture: pygame.Surface, settings, posx: int = 0, posy: int = 0):
+    def __init__(self, texture: pygame.Surface,
+                 settings: Settings,
+                 posx: int = 0, posy: int = 0):
 
         pygame.sprite.Sprite.__init__(self)
 
@@ -56,7 +58,7 @@ class Creature(Entity):
     '''
 
     def __init__(self, texture: pygame.Surface,
-                 settings,
+                 settings: Settings,
                  posx: int = 0, posy: int = 0,
                  max_speed: int = 4):
         
@@ -67,7 +69,7 @@ class Creature(Entity):
         self.directions = set()
 
     
-    def update(self, viewer, tangiables = None, *args, **kwargs):
+    def update(self, viewer, tangiables: list[Entity] = None, *args, **kwargs):
 
         # Сохранение текущих заблокированных направления и скорости перед сбросом
         self_move_block = self.move_block
@@ -76,8 +78,9 @@ class Creature(Entity):
         # Сброс текущих заблокированных направления и скорости
         self.move_block = set()
         self.speedx, self.speedy = 0, 0
+        self.push, self.pushed = False, False
 
-        def tangibility(self, tangiables):
+        def tangibility(tangiables: list[Entity], self = self):
 
             '''
             Функция реализующая свойство осязаемости для двигающихся сущностей. \n
@@ -95,21 +98,18 @@ class Creature(Entity):
                     tangiable = tangiables[i]
 
                     # Проверка на 'столкновение' с собой
-                    if self != tangiable:
+                    if id(self) != id(tangiable):
 
                         # Определение толкающая (и)или толкаемая ли сущность
-                        if self.max_speed and self.directions and tangiable.max_speed:
+                        if self.max_speed and (self.directions or self.pushed) and tangiable.max_speed:
                             self.push = True
-                            self.pushed = False
-                        elif self.max_speed and tangiable.max_speed and tangiable.directions:
+                        if self.max_speed and tangiable.push:
                             self.pushed = True
-                            self.push = False
-                        else:
-                            self.push = False
-                            self.pushed = False
                         
+                        if self.push or self.pushed:
+                            print(f'{str(id(self))[-3:]}: {'push' if self.push else 'pushed'}\n')
 
-                        # Вычисления расстояния между центрами проверяемыми сущностями
+                        # Вычисления расстояния между центрами проверяемых сущностями
                         delta_x = self.rect.centerx - tangiable.rect.centerx
                         delta_y = self.rect.centery - tangiable.rect.centery
 
@@ -128,7 +128,7 @@ class Creature(Entity):
                         
                         # Определение направления корректировки в зависимости от направления столкновения
                         # по горизонтали или по вертикали
-                        if abs(delta_x) > abs(delta_y) and bottom > amortization and top < -amortization:
+                        if abs(delta_x) > abs(delta_y):
 
                             # Определение направления столкновения по горизонтали справа и слева
                             if delta_x > 0:
@@ -140,32 +140,25 @@ class Creature(Entity):
                                 # на 2 амортизации в данном направлении
                                 if not self.push or right > 2 * amortization: self.move_block.add('r')
                             
-                            if delta_x < 0:
+                            elif delta_x < 0:
                                 if not (self.push or self.pushed) or self.pushed and Directions.LEFT in tangiable.directions:
                                     self.speedx = left + amortization
                                 if not self.push or left < 2 * -amortization: self.move_block.add('l')
-                                # print(f'left: {self.speedx}')
 
-                        elif abs(delta_x) <= abs(delta_y) and right > amortization and left < -amortization:
+                        elif abs(delta_x) <= abs(delta_y):
 
                             # Определение направления столкновения по вертикали снизу и сверху
                             if delta_y > 0:
                                 if not (self.push or self.pushed) or self.pushed and Directions.DOWN in tangiable.directions:
                                     self.speedy = bottom - amortization
                                 if not self.push or bottom > 2 * amortization: self.move_block.add('b')
-                                print(f'bottom: {self.speedy}')
-                                # print(f'dx: {delta_x}')
-                                # print(f'dy: {delta_y}')
 
-                            if delta_y < 0:
+                            elif delta_y < 0:
                                 if not (self.push or self.pushed) or self.pushed and Directions.UP in tangiable.directions:
                                     self.speedy = top + amortization
                                 if not self.push or top < 2 * -amortization: self.move_block.add('t')
-                                print(f'top: {self.speedy}')
-                                # print(f'dx: {delta_x}')
-                                # print(f'dy: {delta_y}')
 
-        tangibility(self, tangiables)
+        tangibility(tangiables)
 
         # Движение существа
         if Directions.UP in self.directions:
@@ -188,7 +181,7 @@ class Creature(Entity):
         self.posy += self.speedy
 
 
-        viewer.update(self.settings.resolution)
+        viewer.update(self.settings.resolution)     
         super().view_update(viewer=viewer)
 
         
@@ -200,7 +193,7 @@ class Barier(Entity):
     Класс барьера
     '''
     def __init__(self, texture: pygame.Surface,
-                 settings,
+                 settings: Settings,
                  posx: int = 0, posy: int = 0):
 
         super().__init__(texture, settings, posx, posy)
