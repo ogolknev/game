@@ -1,10 +1,10 @@
 '''
 Определение спрайтов
 '''
-from typing import Any
+
 import pygame
+from settings import Directions
 from viewer import Viewer
-from init import settings_, Directions
 
 
 
@@ -12,18 +12,20 @@ class Entity(pygame.sprite.Sprite):
     '''
     Родительский класс всех сущностей
     '''
-    def __init__(self, texture: pygame.Surface, posx: int = 0, posy: int = 0):
+    def __init__(self, texture: pygame.Surface, settings, posx: int = 0, posy: int = 0):
 
         pygame.sprite.Sprite.__init__(self)
 
         self.image = texture
         self.rect = texture.get_rect()
 
+        self.settings = settings
+
         # Положение спрайта на карте
         self.posx, self.posy = posx, posy
 
         # Обзорщик
-        self.viewer = Viewer(self, settings_.resolution)
+        self.viewer = Viewer(self, settings.resolution)
 
 
         self.max_speed = 0
@@ -54,10 +56,11 @@ class Creature(Entity):
     '''
 
     def __init__(self, texture: pygame.Surface,
+                 settings,
                  posx: int = 0, posy: int = 0,
                  max_speed: int = 4):
         
-        super().__init__(texture, posx, posy)
+        super().__init__(texture, settings, posx, posy)
 
         self.move_block = set()
         self.max_speed = max_speed
@@ -185,7 +188,7 @@ class Creature(Entity):
         self.posy += self.speedy
 
 
-        viewer.update(settings_.resolution)
+        viewer.update(self.settings.resolution)
         super().view_update(viewer=viewer)
 
         
@@ -196,9 +199,11 @@ class Barier(Entity):
     '''
     Класс барьера
     '''
-    def __init__(self, texture: pygame.Surface, posx: int = 0, posy: int = 0):
+    def __init__(self, texture: pygame.Surface,
+                 settings,
+                 posx: int = 0, posy: int = 0):
 
-        super().__init__(texture, posx, posy)
+        super().__init__(texture, settings, posx, posy)
 
 
     def update(self, viewer, *args, **kwargs):
