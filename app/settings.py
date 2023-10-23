@@ -4,6 +4,7 @@
 
 import pygame
 from enum import Enum
+from aux_ import Directions
 
 
 
@@ -16,12 +17,12 @@ class Settings():
     def __init__(self, controls: dict = None):
 
 
-        self.resolution = pygame.display.list_modes()[-3]
+        self.resolution = pygame.display.list_modes()[-1]
         self.screen = pygame.display.set_mode(self.resolution)
 
         self.running = True
 
-        self.FPS = 120
+        self.FPS = 2
         self.clock = pygame.time.Clock()
 
 
@@ -29,23 +30,12 @@ class Settings():
         self.k_control = KeyControl(self, controls)
 
 
-        # Задание группы для текущего обзорщика
-        self.viewer_group = pygame.sprite.Group()
-        # Определение тукущего обзорщика и его групп
+        # Определение тукущего обзорщика
         self.c_viewer = None
+
 
         # Доступные обзорщики (тест)
         self.available_viewers = None
-
-
-class Directions(Enum):
-    '''
-    Возможные направлений
-    '''
-    UP = 0
-    DOWN = 1
-    LEFT = 2
-    RIGHT = 3
 
 
 class KeyControl():
@@ -59,16 +49,16 @@ class KeyControl():
         # Назначение клавиш
         self.controls = {
 
-            'move_up': pygame.K_w,
-            'move_down': pygame.K_s,
-            'move_left': pygame.K_a,
-            'move_right': pygame.K_d,
+            'move_up':       pygame.K_w,
+            'move_down':     pygame.K_s,
+            'move_left':     pygame.K_a,
+            'move_right':    pygame.K_d,
 
-            'fullscreen': pygame.K_F11,
+            'fullscreen':    pygame.K_F11,
 
             'change_viewer': pygame.K_F1,
 
-            'quit': pygame.K_ESCAPE
+            'quit':          pygame.K_ESCAPE
 
         } if not controls else controls
 

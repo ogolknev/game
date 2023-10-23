@@ -47,6 +47,11 @@ barier_valya = Creature(barier_valya_texture, settings_, 600, 500)
 barier_valya.add(players, tangiables)
 
 
+sergay_texture = pygame.Surface((80,80))
+sergay_texture.fill((222,222,222))
+sergay = Creature(sergay_texture, settings_, 900, 500, 6)
+sergay.add(players, tangiables)
+
 # Задание текущего обзорщика
 settings_.c_viewer = player.viewer
 settings_.available_viewers = (barier_valya.viewer, player.viewer)

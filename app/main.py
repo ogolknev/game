@@ -1,5 +1,7 @@
 from init import *
 
+import os
+
 
 
 while settings_.running:
@@ -25,7 +27,7 @@ while settings_.running:
         settings__.k_control.creature_control(settings_.available_viewers[0].target, k_pressed, event)
         settings_.k_control.control(k_pressed, event)
 
-
+    os.system('cls')
     # Обновления спрайтов
     tangiables_sprites = tangiables.sprites()
 
@@ -44,8 +46,7 @@ while settings_.running:
 
     # Слой существ
     players.draw(settings_.screen)
-
-
+    
     # Вывод отрисованного кадра
     pygame.display.flip()
 
